@@ -1,0 +1,13 @@
+[Unit]
+Description=Ewokd (Web + Worker via Honcho)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Ewokd-Discord
+ExecStart=/bin/bash -c 'source /root/Ewokd-Discord/venv/bin/activate && honcho start'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
