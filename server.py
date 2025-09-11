@@ -174,13 +174,32 @@ def format_seconds(seconds):
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
     return f'{hours} hour(s) {minutes} minute(s)'
-    
+
+def load_or_create_tasks_df():
+    """Load the tasks CSV or create a new DataFrame with proper columns."""
+    try:
+        df = pd.read_csv('tasks.csv')
+        # Ensure all required columns exist
+        required_columns = ['Task Name', 'RPH', 'default_rate']
+        for col in required_columns:
+            if col not in df.columns:
+                df[col] = None
+        return df
+    except (pd.errors.EmptyDataError, FileNotFoundError):
+        # Create new DataFrame with proper structure
+        return pd.DataFrame(columns=['Task Name', 'RPH', 'default_rate'])
+
 def get_task_rate(df, task_name):
+    """Get task rate from DataFrame, handling missing columns gracefully."""
     if task_name in df['Task Name'].values:
-        rate = df.loc[df['Task Name'] == task_name, 'default_rate'].values[0]
-        if pd.notna(rate):
-            return rate, False
-    # If task is not found or default_rate is not available, use a fallback
+        # Check if default_rate column exists and has a value
+        if 'default_rate' in df.columns:
+            rate_series = df.loc[df['Task Name'] == task_name, 'default_rate']
+            if not rate_series.empty:
+                rate = rate_series.values[0]
+                if pd.notna(rate):
+                    return rate, False
+    # If task is not found or default_rate is not available, use fallback
     return 0.118, True
     
 @app.post('/process_tasks')
@@ -194,10 +213,7 @@ async def process_tasks(request: Request):
     if not is_user_whitelisted(user_id):
         return JSONResponse({'error': 'User not whitelisted'}, 403)
 
-    try:
-        df = pd.read_csv('tasks.csv')
-    except pd.errors.EmptyDataError:
-        df = pd.DataFrame(columns=['Task Name', 'RPH', 'default_rate'])
+    df = load_or_create_tasks_df()
 
     total_task_count = 0
     total_time = 0
@@ -219,9 +235,16 @@ async def process_tasks(request: Request):
         
         if is_new:
             new_tasks.append(task_name)
-            df = df.append({'Task Name': task_name, 'RPH': 25, 'default_rate': task_rate}, ignore_index=True)
+            # Use pd.concat instead of deprecated append
+            new_row = pd.DataFrame({'Task Name': [task_name], 'RPH': [25], 'default_rate': [task_rate]})
+            df = pd.concat([df, new_row], ignore_index=True)
 
-        rph = df.loc[df['Task Name'] == task_name, 'RPH'].values[0] if task_name in df['Task Name'].values else 25
+        # Get RPH value
+        if task_name in df['Task Name'].values:
+            rph_series = df.loc[df['Task Name'] == task_name, 'RPH']
+            rph = rph_series.values[0] if not rph_series.empty and pd.notna(rph_series.values[0]) else 25
+        else:
+            rph = 25
 
         task_count_by_rate[task_rate] = task_count_by_rate.get(task_rate, 0) + taskCount
 
@@ -305,10 +328,7 @@ async def process_tasks_no_report(request: Request):
     if not is_user_whitelisted(user_id):
         return JSONResponse({'error': 'User not whitelisted'}, 403)
 
-    try:
-        df = pd.read_csv('tasks.csv')
-    except pd.errors.EmptyDataError:
-        df = pd.DataFrame(columns=['Task Name', 'RPH', 'default_rate'])
+    df = load_or_create_tasks_df()
 
     total_task_count = 0
     total_time = 0
@@ -323,9 +343,16 @@ async def process_tasks_no_report(request: Request):
         
         if is_new:
             new_tasks.append(task_name)
-            df = df.append({'Task Name': task_name, 'RPH': 25, 'default_rate': task_rate}, ignore_index=True)
+            # Use pd.concat instead of deprecated append
+            new_row = pd.DataFrame({'Task Name': [task_name], 'RPH': [25], 'default_rate': [task_rate]})
+            df = pd.concat([df, new_row], ignore_index=True)
 
-        rph = df.loc[df['Task Name'] == task_name, 'RPH'].values[0] if task_name in df['Task Name'].values else 25
+        # Get RPH value
+        if task_name in df['Task Name'].values:
+            rph_series = df.loc[df['Task Name'] == task_name, 'RPH']
+            rph = rph_series.values[0] if not rph_series.empty and pd.notna(rph_series.values[0]) else 25
+        else:
+            rph = 25
 
         task_time = int(taskCount * rph)
         total_time += task_time
