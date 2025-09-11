@@ -24,7 +24,6 @@ import logging
 import pandas as pd
 import os
 import httpx
-import html
 import datetime
 import json
 
@@ -85,6 +84,10 @@ class Task(BaseModel):
     
     def __getitem__(self, item):
         return getattr(self, item)
+    
+class TaskPayload(BaseModel):
+    user_id: int
+    tasks: Dict[str, Task]
 
     @validator('tasks')
     def tasks_values(cls, v):
@@ -174,11 +177,11 @@ def format_seconds(seconds):
     
 def get_task_rate(df, task_name):
     if task_name in df['Task Name'].values:
-            rate = df.loc[df['Task Name'] == task_name].values[0]
-            if pd.notna(rate):
-                return rate, False
-    # If task is not found or default_rate rate is not available, use default values
-    return 0.001, None, True
+        rate = df.loc[df['Task Name'] == task_name, 'default_rate'].values[0]
+        if pd.notna(rate):
+            return rate, False
+    # If task is not found or default_rate is not available, use a fallback
+    return 0.118, True
     
 @app.post('/process_tasks')
 async def process_tasks(request: Request):
@@ -201,7 +204,6 @@ async def process_tasks(request: Request):
     total_payout = 0
     task_count_by_rate = {}
     new_tasks = []
-    fallback_tasks = []
     response_msg = ''
 
     all_dates = []
@@ -213,13 +215,11 @@ async def process_tasks(request: Request):
         taskCount = task_info.taskCount
         total_task_count += taskCount
 
-        task_rate, rate_region, is_new = get_task_rate(df, task_name, region)
+        task_rate, is_new = get_task_rate(df, task_name)
         
         if is_new:
             new_tasks.append(task_name)
             df = df.append({'Task Name': task_name, 'RPH': 25, 'default_rate': task_rate}, ignore_index=True)
-        elif rate_region != region:
-            fallback_tasks.append(task_name)
 
         rph = df.loc[df['Task Name'] == task_name, 'RPH'].values[0] if task_name in df['Task Name'].values else 25
 
@@ -231,10 +231,19 @@ async def process_tasks(request: Request):
         task_payout = taskCount * task_rate
         total_payout += task_payout
 
-        response_msg += f'🔧 Task: **{task_name}**, Dates: {", ".join([d.strftime("%d %b %Y") for d in task_dates])}, Tasks completed: {taskCount}, Fixed RPH: {rph:.2f} seconds, Task rate: ${task_rate:.3f} ({rate_region}),\n⏰ Total time for this task: {format_seconds(task_time)},\n💰 Estimated Payout: ${task_payout:.2f}.\n\n'
+        response_msg += (
+            f'🔧 Task: **{task_name}**, Dates: {", ".join([d.strftime("%d %b %Y") for d in task_dates])}, '
+            f'Tasks completed: {taskCount}, Fixed RPH: {rph:.2f} seconds, '
+            f'Task rate: ${task_rate:.3f},\n'
+            f'⏰ Total time for this task: {format_seconds(task_time)},\n'
+            f'💰 Estimated Payout: ${task_payout:.2f}.\n\n'
+        )
 
     if all_dates:
-        response_msg = f"🗓️ Report Date Range: {min(all_dates).strftime('%d %b %Y')} - {max(all_dates).strftime('%d %b %Y')}\n\n" + response_msg
+        response_msg = (
+            f"🗓️ Report Date Range: {min(all_dates).strftime('%d %b %Y')} - {max(all_dates).strftime('%d %b %Y')}\n\n"
+            + response_msg
+        )
 
         for rate, count in task_count_by_rate.items():
             response_msg += f'📝 Total tasks completed at ${rate:.3f}: **{count}**\n'
@@ -245,19 +254,11 @@ async def process_tasks(request: Request):
 
     if new_tasks:
         df.to_csv('tasks.csv', index=False)
-        new_tasks_msg = "🆕 New tasks detected. Please update the time per task and task rate in 'tasks.csv': " + ', '.join(f"**{task_name}**" for task_name in new_tasks)
-        response_msg += new_tasks_msg
-        response_msg += "\n✅ A Placeholder time per task of 25 seconds and task rate of $0.118 has been added to 'tasks.csv'.\n"
-        response_msg += "📢 Please report the new tasks to the bot administrator.\n"
-
-    if fallback_tasks:
-        fallback_msg = f"⚠️ The following tasks used the default_rate rate as a fallback because the {region} rate was not available: " + ', '.join(f"**{task_name}**" for task_name in fallback_tasks)
-        response_msg += fallback_msg
-        response_msg += f"\n📢 Please ask the bot administrator to update the {region} rates for these tasks.\n"
-
-    if region not in df.columns and region != 'default_rate':
-        response_msg += f"⚠️ The {region} column does not exist in the CSV. All calculations used the default_rate rate as a fallback.\n"
-        response_msg += f"📢 Please ask the bot administrator to add the {region} column to the CSV file.\n"
+        response_msg += (
+            "🆕 New tasks detected. Please update the time per task and task rate in 'tasks.csv': "
+            + ', '.join(f"**{task_name}**" for task_name in new_tasks)
+        )
+        response_msg += "\n✅ A placeholder time per task of 25 seconds and task rate of $0.118 has been added.\n"
 
     response_parts = [response_msg[i:i+2000] for i in range(0, len(response_msg), 2000)]
 
@@ -318,7 +319,7 @@ async def process_tasks_no_report(request: Request):
         taskCount = task_info.taskCount
         total_task_count += taskCount
 
-        task_rate, is_new = get_task_rate(df, task_name, region)
+        task_rate, is_new = get_task_rate(df, task_name)
         
         if is_new:
             new_tasks.append(task_name)
