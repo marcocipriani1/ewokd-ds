@@ -2,7 +2,7 @@
 
 **Ewokd** is a bot that tracks tasks, notifies you when they’re available, estimates your EWOQ earnings, and calculates the time spent working based on each task's RPH (rate per hour). 
 
-> ⚠️ **Work in progress** — The code is actively being developed. The install script does not work yet, the extension is not published, and the code should be reviewed carefully. You are free to create your own scripts and extensions.
+> ⚠️ **Work in progress** — The code is actively being developed. The extension is not published, and the code should be reviewed carefully. You are free to create your own scripts and extensions.
 
 > 📱 A Telegram version is coming soon.
 ---
@@ -18,7 +18,7 @@
 
 ## Requirements
 
-- Python **3.9.7**  
+- Python **3.13.7**  
 - Discord account & bot token  
 - `pip` (Python package manager)  
 
@@ -28,16 +28,22 @@
 
 1. **Clone the repository**  
 ```bash
-git clone <your-repo-url>
-cd <repo-folder>
+git clone https://codeberg.org/mcipriani/ewokd-ds.git
+```
+or 
+
+```bash
+git clone https://github.com/marcocipriani1/ewokd-ds.git
+```
+```bash
+cd ewoq-ds
 ```
 
 2. **Create a virtual environment**
 
 ```bash
 python -m venv venv
-source venv/bin/activate   # Linux/macOS
-venv\Scripts\activate      # Windows
+source venv/bin/activate
 ```
 
 3. **Install dependencies**
@@ -50,8 +56,6 @@ pip install -r requirements.txt
 - Add your Discord bot token to a `.env` file or configuration file as required by the code.
 - Add your Discord user ID and the server port.  
 - An `.env-example` file is provided to guide you.
-
-> ⚠️ The `install.sh` script is not functional yet — manual installation is required for now.
 
 ---
 
