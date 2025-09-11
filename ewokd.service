@@ -5,8 +5,8 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root/Ewokd-Discord
-ExecStart=/bin/bash -c 'source /root/Ewokd-Discord/venv/bin/activate && honcho start'
+WorkingDirectory=/root/ewokd-ds
+ExecStart=/bin/bash -c 'source /root/ewokd-ds/venv/bin/activate && honcho start'
 Restart=on-failure
 
 [Install]
