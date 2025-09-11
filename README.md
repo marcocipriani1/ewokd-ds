@@ -74,7 +74,7 @@ honcho start
 
 Ewokd comes with a `systemd` unit file, so you can run it as a service that starts on boot and restarts automatically.
 
-⚠️ **Warning:** The included systemd unit file points to `/root/Ewokd-Discord` by default. Modify the paths in the unit file to match your installation directory.
+⚠️ **Warning:** The included systemd unit file points to `/root/ewokd-ds` by default. Modify the paths in the unit file to match your installation directory.
 
 
 #### Instructions
@@ -117,13 +117,6 @@ journalctl -u ewokd.service -f
 
 ---
 
-## Contributing
-
-- Fork the repository.
-- Create a branch for your changes.
-- Submit pull requests.
-- Carefully review changes before merging.
-
 ---
 
 ## License
@@ -146,7 +139,5 @@ journalctl -u ewokd.service -f
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
-
-*Made with ❤️ for task tracking and EWOQ workers.*
 
 
