@@ -29,7 +29,7 @@
 git clone https://codeberg.org/mcipriani/ewokd-ds.git
 ```
 
-or
+  or
 
 ```bash
 git clone https://github.com/marcocipriani1/ewokd-ds.git
