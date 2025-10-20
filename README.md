@@ -1,10 +1,7 @@
 # Ewokd-Discord
 
-**Ewokd** is a bot that tracks tasks, notifies you when they’re available, estimates your EWOQ earnings, and calculates the time spent working based on each task's RPH (rate per hour). 
+**Ewokd** is a bot that tracks tasks, notifies you when they’re available, estimates your EWOQ earnings, and calculates the time spent working based on each task's RPH (rate per hour).
 
-> ⚠️ **Work in progress** — The code is actively being developed. The extension is not published, and the code should be reviewed carefully. You are free to create your own scripts and extensions.
-
-> 📱 A Telegram version is coming soon.
 ---
 
 ## Features
@@ -18,7 +15,7 @@
 
 ## Requirements
 
-- Python **3.13.7**  
+- Python **3.9 - 3.13.7**  
 - Discord account & bot token  
 - `pip` (Python package manager)  
 
@@ -27,14 +24,17 @@
 ## Installation
 
 1. **Clone the repository**  
+
 ```bash
 git clone https://codeberg.org/mcipriani/ewokd-ds.git
 ```
-or 
+
+or
 
 ```bash
 git clone https://github.com/marcocipriani1/ewokd-ds.git
 ```
+
 ```bash
 cd ewoq-ds
 ```
@@ -53,6 +53,7 @@ pip install -r requirements.txt
 ```
 
 4. **Configure your bot**  
+
 - Add your Discord bot token to a `.env` file or configuration file as required by the code.
 - Add your Discord user ID and the server port.  
 - An `.env-example` file is provided to guide you.
@@ -70,6 +71,7 @@ Then run:
 ```bash
 honcho start
 ```
+
 - Honcho will start both processes and prefix logs (`web | ...`, `worker | ...`) for clarity.
 
 - You can stop both processes at any time with `Ctrl+C`.
@@ -79,7 +81,6 @@ honcho start
 Ewokd comes with a `systemd` unit file, so you can run it as a service that starts on boot and restarts automatically.
 
 ⚠️ **Warning:** The included systemd unit file points to `/root/ewokd-ds` by default. Modify the paths in the unit file to match your installation directory.
-
 
 #### Instructions
 
@@ -94,6 +95,7 @@ cp ewokd.service /etc/systemd/system/
 ```bash
 systemctl daemon-reload
 ```
+
 3. Start Ewokd:
 
 ```bash
@@ -125,7 +127,6 @@ journalctl -u ewokd.service -f
 
 ## License
 
-
     Ewokd: a bot that tracks tasks, alerts you instantly, and calculates your EWOQ earnings. 
     Copyright (C) 2023-2025  Marco Cipriani marcocipriani@tutanota.com
 
@@ -143,5 +144,3 @@ journalctl -u ewokd.service -f
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 ---
-
-
