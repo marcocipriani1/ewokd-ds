@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import WebSocket, WebSocketDisconnect, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from typing import List, Optional, Dict
@@ -100,6 +100,25 @@ WHITELIST = set(map(int, filter(str.isdigit, AUTHORIZED_USER_IDS)))
 
 def is_user_whitelisted(user_id: int) -> bool:
     return user_id in WHITELIST
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        while True:
+            data = await websocket.receive_text()
+            msg = json.loads(data)
+            action = msg.get("action")
+            payload = msg.get("payload")
+
+            if action == "send_signal":
+                await handle_send_signal(payload)
+                await websocket.send_text("signal_sent")
+            else:
+                await websocket.send_text("unknown_action")
+    except Exception as e:
+        print("WebSocket error:", e)
+        await websocket.close()
 
 @app.post('/status')
 async def status(request: Request):
