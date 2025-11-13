@@ -1,3 +1,4 @@
 .env
 tasks.csv
 venv
+.python-version
