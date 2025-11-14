@@ -1,3 +1,6 @@
 .env
 tasks.csv
 venv
+.python-version
+__pycache__/
+*.py[cod]
