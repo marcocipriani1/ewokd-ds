@@ -1,6 +1,6 @@
 # Ewokd-Discord
 
-**Ewokd** is a bot that tracks tasks, notifies you when they’re available, estimates your EWOQ earnings, and calculates the time spent working based on each task's RPH (rate per hour).
+**Ewokd** is a daemon+bot that tracks tasks, notifies you when they’re available, estimates your EWOQ earnings, and calculates the time spent working based on each task's RPH (rate per hour).
 
 ---
 
@@ -8,8 +8,7 @@
 
 - 📢 Sends notifications when tasks are available  
 - ✅ Tracks completed tasks  
-- 💰 Estimates earnings for EWOQ  
-- 🔧 Extensible — you can script your own functionality  
+- 💰 Estimates earnings for EWOQ
 
 ---
 
@@ -62,7 +61,7 @@ pip install -r requirements.txt
 
 ## Running Ewokd
 
-Ewokd uses a **Procfile** to manage multiple processes, allowing you to run both the web server and the bot worker concurrently.
+Ewokd uses a **Procfile** to manage two different processes, allowing you to run both the daemon and the bot worker concurrently.
 
 > You will need to create a `task.csv` file in the root folder of the server and populate it yourself according to the example provided in `task_example.csv`.
 
